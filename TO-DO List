@@ -1,0 +1,118 @@
+import tkinter as tk
+from tkinter import messagebox
+
+class ToDoListApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("To-do List")
+
+        self.tasks = []
+
+        self.frame = tk.Frame(self.root)
+        self.frame.pack(pady=10)
+
+        self.task_listbox = tk.Listbox(
+            self.frame, height=10, width=50, bd=0, selectmode=tk.SINGLE)
+        self.task_listbox.pack(side=tk.LEFT, fill=tk.BOTH)
+
+        self.scrollbar = tk.Scrollbar(self.frame)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.BOTH)
+
+        self.task_listbox.config(yscrollcommand=self.scrollbar.set)
+        self.scrollbar.config(command=self.task_listbox.yview)
+
+        self.entry = tk.Entry(self.root, width=50)
+        self.entry.pack(pady=10)
+
+        self.button_frame = tk.Frame(self.root)
+        self.button_frame.pack(pady=10)
+
+        self.add_task_button = tk.Button(
+            self.button_frame, text="Add Task", command=self.add_task)
+        self.add_task_button.pack(side=tk.LEFT, padx=5)
+        
+        self.update_task_button = tk.Button(
+            self.button_frame, text="Update Task", command=self.update_task)
+        self.update_task_button.pack(side=tk.LEFT, padx=5)
+        
+        self.complete_task_button = tk.Button(
+            self.button_frame, text="Complete Task", command=self.complete_task)
+        self.complete_task_button.pack(side=tk.LEFT, padx=5)
+        
+        self.view_tasks_button = tk.Button(
+            self.button_frame, text="View List of Tasks", command=self.view_tasks)
+        self.view_tasks_button.pack(side=tk.LEFT, padx=5)
+
+
+        self.remove_task_button = tk.Button(
+            self.button_frame, text="Remove Task", command=self.remove_task)
+        self.remove_task_button.pack(side=tk.LEFT, padx=5)
+
+    def add_task(self):
+        task = self.entry.get()
+        if task != "":
+            self.tasks.append({"task": task, "completed": False})
+            self.update_task_listbox()
+            self.entry.delete(0, tk.END)
+        else:
+            messagebox.showwarning("Enter a task.")
+
+    def remove_task(self):
+        try:
+            task_index = self.task_listbox.curselection()[0]
+            del self.tasks[task_index]
+            self.update_task_listbox()
+        except IndexError:
+            messagebox.showwarning("Please select one task.")
+
+    def update_task(self):
+        try:
+            task_index = self.task_listbox.curselection()[0]
+            new_task = self.entry.get()
+            if new_task != "":
+                self.tasks[task_index]["task"] = new_task
+                self.update_task_listbox()
+                self.entry.delete(0, tk.END)
+            else:
+                messagebox.showwarning("Please select one task.")
+        except IndexError:
+            messagebox.showwarning("You must select one task from given added tasks.")
+
+    def complete_task(self):
+        try:
+            task_index = self.task_listbox.curselection()[0]
+            self.tasks[task_index]["completed"] = not self.tasks[task_index]["completed"]
+            self.update_task_listbox()
+        except IndexError:
+            messagebox.showwarning("Please select atleast one task.")
+
+    def view_tasks(self):
+        if self.tasks:
+            view_window = tk.Toplevel(self.root)
+            view_window.title("Tasks List")
+
+            task_label = tk.Label(view_window, text="Tasks:")
+            task_label.pack(pady=10)
+
+            for task in self.tasks:
+                display_text = task["task"]
+                if task["completed"]:
+                    display_text += " (Completed)"
+                task_display = tk.Label(view_window, text=display_text)
+                task_display.pack()
+
+        else:
+            messagebox.showinfo("No tasks added yet.")
+
+    def update_task_listbox(self):
+        self.task_listbox.delete(0, tk.END)
+        for task in self.tasks:
+            display_text = task["task"]
+            if task["completed"]:
+                display_text += " (Completed)"
+            self.task_listbox.insert(tk.END, display_text)
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = ToDoListApp(root)
+    root.mainloop()
